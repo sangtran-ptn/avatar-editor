@@ -101,14 +101,14 @@ const AddCropPhotoDialog: React.FC<AddCropPhotoDialogProps> = ({
           <AvatarFallback text={placeholderText} />
         )}
 
-        <Slider
+        {/* <Slider
           min={1}
           max={3}
           step={0.1}
           value={zoom}
           onChange={(_, value) => setZoom(value as number)}
           sx={{ mt: 2 }}
-        />
+        /> */}
 
         <Stack direction="row" spacing={2} sx={{ mt: 2 }}>
           <Button startIcon={<Image />} onClick={handleSelectPhoto}>Select Photo</Button>
