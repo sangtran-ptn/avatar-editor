@@ -25,32 +25,43 @@ const CropperArea: React.FC<CropperAreaProps> = ({
     onCropComplete,
 }) => {
     const containerRef = useRef<HTMLDivElement>(null);
-    const [cropSize, setCropSize] = useState({ width: 0, height: 0 });
+    const [containerWidth, setContainerWidth] = useState(0);
+    const [minZoom, setMinZoom] = useState(1);
 
     useEffect(() => {
         const updateSize = () => {
-
-            // console.log('containerRef width:', containerRef.current?.off);
-            // console.log('containerRef height:', containerRef.current?.offsetHeight);
-
-            const screenWidth = 600; // window.innerWidth;
-            const screenHeight = 600; // window.innerHeight;
-
-            // Desired padding from crop to container edges
-            const paddingX = 15 * 2;
-            const paddingY = 35 * 2;
-
-            const maxCropWidth = screenWidth - paddingX;
-            const maxCropHeight = screenHeight - paddingY;
-
-            const cropDiameter = Math.min(maxCropWidth, maxCropHeight);
-            setCropSize({ width: cropDiameter, height: cropDiameter });
+            if (!containerRef.current) return;
+            const rect = containerRef.current.getBoundingClientRect();
+            setContainerWidth(rect.width);
         };
 
         updateSize();
         window.addEventListener('resize', updateSize);
         return () => window.removeEventListener('resize', updateSize);
     }, []);
+
+    const cropSize = {
+        width: containerWidth - 30, // 15px left + 15px right
+        height: containerWidth - 30,
+    };
+
+    useEffect(() => {
+        if (!image || !cropSize.width || !cropSize.height) return;
+
+        const img = new Image();
+        img.onload = () => {
+            console.log("cropSize", cropSize);
+            console.log("img", img.width, img.height);
+            const zoomX = cropSize.width / img.width;
+            const zoomY = cropSize.height / img.height;
+            const initialZoom = Math.max(zoomX, zoomY, 1);
+            setMinZoom(initialZoom);
+            
+            console.log("initialZoom", initialZoom);
+            onZoomChange(initialZoom);
+        };
+        img.src = image;
+    }, [image, cropSize, onZoomChange]);
 
     return (
         <div
@@ -76,6 +87,7 @@ const CropperArea: React.FC<CropperAreaProps> = ({
                     image={image}
                     crop={crop}
                     zoom={zoom}
+                    minZoom={minZoom}
                     aspect={1}
                     cropShape={cropShape}
                     showGrid={false}
@@ -83,16 +95,25 @@ const CropperArea: React.FC<CropperAreaProps> = ({
                     onZoomChange={onZoomChange}
                     onCropComplete={onCropComplete}
                     cropSize={cropSize}
-                    objectFit="horizontal-cover"
+                    objectFit="contain"
                 />
-                <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '0 20px' }}>
+                <div
+                    style={{
+                        position: 'absolute',
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                        padding: '0 20px',
+                        // background: 'rgba(0, 0, 0, 0.4)',
+                    }}
+                >
                     <Slider
-                        min={1}
-                        max={3}
+                        min={minZoom}
+                        max={10}
                         step={0.1}
                         value={zoom}
                         onChange={(_, value) => onZoomChange(value as number)}
-                    // sx={{ mx: 2 }}
+                    // sx={{ color: 'white' }}
                     />
                 </div>
             </div>

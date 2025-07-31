@@ -1,3 +1,46 @@
+// import React, { useState } from 'react';
+// import AddCropPhotoDialog from './components/AddCropPhotoDialog';
+
+// function App() {
+//   const [dialogOpen, setDialogOpen] = useState(false);
+//   const [avatarUrl, setAvatarUrl] = useState<string | undefined>(undefined);
+
+//   const handleSave = (blob: Blob, hasChanged: boolean) => {
+//     if (hasChanged) {
+//       const objectUrl = URL.createObjectURL(blob);
+//       setAvatarUrl(objectUrl);
+
+//       // Optionally: upload to server here
+//     }
+//     setDialogOpen(false);
+//   };
+
+//   return (
+//     <>
+//       <img
+//         src={avatarUrl || 'https://via.placeholder.com/150'}
+//         alt="Avatar"
+//         style={{ width: 100, height: 100, borderRadius: '50%' }}
+//       />
+//       <button onClick={() => setDialogOpen(true)}>Edit Avatar</button>
+
+//       <AddCropPhotoDialog
+//         open={dialogOpen}
+//         imageUrl={avatarUrl}
+//         nameForAvatar="Sang Tran"
+//         onClose={() => setDialogOpen(false)}
+//         onSave={handleSave}
+//       />
+//     </>
+//   );
+// };
+
+// export default App;
+
+
+
+
+
 // import React, { useState } from "react";
 // import {AvatarEditor} from "./components/AvatarEditor";
 // import { Avatar, Box, Button } from "@mui/material";
@@ -66,43 +109,123 @@
 //   // );
 // }
 
+// import React, { useState } from 'react';
+// import AddCropPhotoDialog from './components/AddCropPhotoDialog/AddCropPhotoDialog';
+// import { Button, Avatar, Stack } from '@mui/material';
+
+
+
+// function App() {
+//   const [open, setOpen] = useState(false);
+//   const [photoUrl, setPhotoUrl] = useState<string | undefined>(undefined);
+//   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+
+//   const handleSave = (croppedFile: File | null, hasChanged: boolean) => {
+//     if (croppedFile && hasChanged) {
+//       const newUrl = URL.createObjectURL(croppedFile);
+//       setPhotoUrl(newUrl);
+//       setUploadedFile(croppedFile);
+//     }
+//   };
+
+//   return (
+//     <Stack spacing={2} alignItems="center" justifyContent="center" sx={{ mt: 4 }}>
+//       <Avatar
+//         src={photoUrl}
+//         sx={{ width: 120, height: 120 }}
+//       />
+//       <Button variant="contained" onClick={() => setOpen(true)}>Edit Image</Button>
+
+//       <AddCropPhotoDialog
+//         open={open}
+//         onClose={() => setOpen(false)}
+//         onSave={handleSave}
+//         imageUrl={photoUrl}
+//         placeholderText="Jane Doe"
+//         isAvatar={true}
+//       />
+//     </Stack>
+//   );
+// }
+
+// export default App;
+
+
 import React, { useState } from 'react';
-import AddCropPhotoDialog from './components/AddCropPhotoDialog/AddCropPhotoDialog';
-import { Button, Avatar, Stack } from '@mui/material';
-
-
+import { Box, Button, Avatar, Typography, useMediaQuery, useTheme } from '@mui/material';
+import { AddCropPhotoDialog } from './components/AddCropPhotoDialog-old';
 
 function App() {
   const [open, setOpen] = useState(false);
-  const [photoUrl, setPhotoUrl] = useState<string | undefined>(undefined);
-  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  const [hasChanged, setHasChanged] = useState(false);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
-  const handleSave = (croppedFile: File | null, hasChanged: boolean) => {
-    if (croppedFile && hasChanged) {
-      const newUrl = URL.createObjectURL(croppedFile);
-      setPhotoUrl(newUrl);
-      setUploadedFile(croppedFile);
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+
+  const handleSave = async (file: Blob | null, changed: boolean) => {
+    setHasChanged(changed);
+    if (file) {
+      const url = URL.createObjectURL(file);
+      setPhotoUrl(url);
+    } else if (changed) {
+      setPhotoUrl(null);
     }
+    setOpen(false);
+  };
+
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map((n) => n[0])
+      .join('');
   };
 
   return (
-    <Stack spacing={2} alignItems="center" justifyContent="center" sx={{ mt: 4 }}>
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: 2,
+        pt: 4,
+      }}
+    >
+      <Typography variant="h6">Profile Photo</Typography>
+
       <Avatar
-        src={photoUrl}
-        sx={{ width: 120, height: 120 }}
-      />
-      <Button variant="contained" onClick={() => setOpen(true)}>Edit Image</Button>
+        src={photoUrl || undefined}
+        sx={{
+          width: isMobile ? 100 : 140,
+          height: isMobile ? 100 : 140,
+          fontSize: 40,
+          bgcolor: photoUrl ? 'transparent' : 'primary.main',
+        }}
+      >
+        {!photoUrl && getInitials('Alice Brown')}
+      </Avatar>
+
+      <Button
+        variant="contained"
+        size="large"
+        onClick={handleOpen}
+        sx={{ textTransform: 'none', borderRadius: 4, px: 4 }}
+      >
+        {photoUrl ? 'Replace Photo' : 'Add Photo'}
+      </Button>
 
       <AddCropPhotoDialog
         open={open}
-        onClose={() => setOpen(false)}
+        initialUrl={photoUrl}
+        placeholderText="Alice Brown"
+        aspect={1}
+        onClose={handleClose}
         onSave={handleSave}
-        imageUrl={photoUrl}
-        placeholderText="Jane Doe"
-        isAvatar={true}
       />
-    </Stack>
+    </Box>
   );
-}
+};
 
 export default App;
