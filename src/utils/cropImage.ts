@@ -1,44 +1,41 @@
-const createImage = (url: string): Promise<HTMLImageElement> =>
-  new Promise((resolve, reject) => {
-    const image = new Image();
-    image.addEventListener('load', () => resolve(image));
-    image.addEventListener('error', (error) => reject(error));
-    image.setAttribute('crossOrigin', 'anonymous');
-    image.src = url;
+export function readFileAsDataURL(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = reject;
+    reader.onload = () => resolve(reader.result as string);
+    reader.readAsDataURL(file);
   });
-
-interface PixelCrop {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
 }
 
-export default async function getCroppedImg(imageSrc: string, pixelCrop: PixelCrop): Promise<Blob | null> {
+export default async function getCroppedImg(
+  imageSrc: string,
+  crop: { x: number; y: number; width: number; height: number }
+): Promise<string> {
   const image = await createImage(imageSrc);
   const canvas = document.createElement('canvas');
-  const ctx = canvas.getContext('2d');
-
-  canvas.width = pixelCrop.width;
-  canvas.height = pixelCrop.height;
-
-  if (!ctx) throw new Error('Could not get canvas context');
-
+  canvas.width = crop.width;
+  canvas.height = crop.height;
+  const ctx = canvas.getContext('2d')!;
   ctx.drawImage(
-    image as CanvasImageSource,
-    pixelCrop.x,
-    pixelCrop.y,
-    pixelCrop.width,
-    pixelCrop.height,
+    image,
+    crop.x,
+    crop.y,
+    crop.width,
+    crop.height,
     0,
     0,
-    pixelCrop.width,
-    pixelCrop.height
+    crop.width,
+    crop.height
   );
+  return canvas.toDataURL('image/jpeg');
+}
 
-  return new Promise((resolve) => {
-    canvas.toBlob((blob) => {
-      resolve(blob);
-    }, 'image/jpeg');
+function createImage(url: string): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    image.crossOrigin = 'anonymous';
+    image.src = url;
+    image.onload = () => resolve(image);
+    image.onerror = reject;
   });
 }
