@@ -109,46 +109,46 @@
 //   // );
 // }
 
-// import React, { useState } from 'react';
-// import AddCropPhotoDialog from './components/AddCropPhotoDialog/AddCropPhotoDialog';
-// import { Button, Avatar, Stack } from '@mui/material';
+import React, { useState } from 'react';
+import AddCropPhotoDialog from './components/AddCropPhotoDialog/AddCropPhotoDialog';
+import { Button, Avatar, Stack } from '@mui/material';
 
 
 
-// function App() {
-//   const [open, setOpen] = useState(false);
-//   const [photoUrl, setPhotoUrl] = useState<string | undefined>(undefined);
-//   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+function App2() {
+  const [open, setOpen] = useState(false);
+  const [photoUrl, setPhotoUrl] = useState<string | undefined>(undefined);
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
 
-//   const handleSave = (croppedFile: File | null, hasChanged: boolean) => {
-//     if (croppedFile && hasChanged) {
-//       const newUrl = URL.createObjectURL(croppedFile);
-//       setPhotoUrl(newUrl);
-//       setUploadedFile(croppedFile);
-//     }
-//   };
+  const handleSave = (croppedFile: File | null, hasChanged: boolean) => {
+    if (croppedFile && hasChanged) {
+      const newUrl = URL.createObjectURL(croppedFile);
+      setPhotoUrl(newUrl);
+      setUploadedFile(croppedFile);
+    }
+  };
 
-//   return (
-//     <Stack spacing={2} alignItems="center" justifyContent="center" sx={{ mt: 4 }}>
-//       <Avatar
-//         src={photoUrl}
-//         sx={{ width: 120, height: 120 }}
-//       />
-//       <Button variant="contained" onClick={() => setOpen(true)}>Edit Image</Button>
+  return (
+    <Stack spacing={2} alignItems="center" justifyContent="center" sx={{ mt: 4 }}>
+      <Avatar
+        src={photoUrl}
+        sx={{ width: 120, height: 120 }}
+      />
+      <Button variant="contained" onClick={() => setOpen(true)}>Edit Image</Button>
 
-//       <AddCropPhotoDialog
-//         open={open}
-//         onClose={() => setOpen(false)}
-//         onSave={handleSave}
-//         imageUrl={photoUrl}
-//         placeholderText="Jane Doe"
-//         isAvatar={true}
-//       />
-//     </Stack>
-//   );
-// }
+      <AddCropPhotoDialog
+        open={open}
+        onClose={() => setOpen(false)}
+        onSave={handleSave}
+        imageUrl={photoUrl}
+        placeholderText="Jane Doe"
+        isAvatar={true}
+      />
+    </Stack>
+  );
+}
 
-// export default App;
+export default App2;
 
 
 // import React, { useState } from 'react';
@@ -232,66 +232,3 @@
 // };
 
 // export default App;
-
-import { Box, Tab, Tabs } from "@mui/material";
-import React from "react";
-// import App1 from "./App copy";
-import App2 from "./App copy 2";
-
-
-interface TabPanelProps {
-  children?: React.ReactNode;
-  index: number;
-  value: number;
-}
-
-function CustomTabPanel(props: TabPanelProps) {
-  const { children, value, index, ...other } = props;
-
-  return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`simple-tabpanel-${index}`}
-      aria-labelledby={`simple-tab-${index}`}
-      {...other}
-    >
-      {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
-    </div>
-  );
-}
-
-function a11yProps(index: number) {
-  return {
-    id: `simple-tab-${index}`,
-    'aria-controls': `simple-tabpanel-${index}`,
-  };
-}
-
-function App() {
-  const [value, setValue] = React.useState(0);
-
-  const handleChange = (event: React.SyntheticEvent, newValue: number) => {
-    setValue(newValue);
-  };
-
-  return (
-    <Box sx={{ width: '100%' }}>
-      <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-        <Tabs value={value} onChange={handleChange} aria-label="basic tabs example">
-          <Tab label="Item One" {...a11yProps(1)} />
-          <Tab label="Item Two" {...a11yProps(0)} />
-        </Tabs>
-      </Box>
-      <CustomTabPanel value={value} index={1}>
-        {/* <App1></App1> */}
-        <div>hello</div>
-      </CustomTabPanel>
-      <CustomTabPanel value={value} index={0}>
-        <App2></App2>
-      </CustomTabPanel>
-    </Box>
-  );
-}
-
-export default App;
