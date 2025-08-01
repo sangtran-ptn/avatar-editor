@@ -277,19 +277,20 @@ function App() {
 
   return (
     <Box sx={{ width: '100%' }}>
-      <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+      {/* <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
         <Tabs value={value} onChange={handleChange} aria-label="basic tabs example">
           <Tab label="Item One" {...a11yProps(1)} />
           <Tab label="Item Two" {...a11yProps(0)} />
         </Tabs>
       </Box>
       <CustomTabPanel value={value} index={1}>
-        {/* <App1></App1> */}
+        <App1></App1>
         <div>hello</div>
       </CustomTabPanel>
       <CustomTabPanel value={value} index={0}>
         <App2></App2>
-      </CustomTabPanel>
+      </CustomTabPanel> */}
+      <App2></App2>
     </Box>
   );
 }

@@ -126,6 +126,11 @@ function App2() {
       setPhotoUrl(newUrl);
       setUploadedFile(croppedFile);
     }
+
+    if (!croppedFile) {
+      setPhotoUrl(undefined);
+      setUploadedFile(null);
+    }
   };
 
   return (
