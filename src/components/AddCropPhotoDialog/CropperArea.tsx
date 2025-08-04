@@ -11,6 +11,7 @@ interface CropperAreaProps {
     onCropChange: (crop: { x: number; y: number }) => void;
     onZoomChange: (zoom: number) => void;
     onCropComplete: (croppedArea: any, croppedAreaPixels: any) => void;
+    containerRef: React.RefObject<HTMLDivElement | null>;
 }
 
 const CropperArea: React.FC<CropperAreaProps> = ({
@@ -22,11 +23,11 @@ const CropperArea: React.FC<CropperAreaProps> = ({
     onCropChange,
     onZoomChange,
     onCropComplete,
+    containerRef,
 }) => {
-    const containerRef = useRef<HTMLDivElement>(null);
-    let [imageRef, setImageRef] = useState<React.RefObject<HTMLImageElement> | null>(null);
     const [containerWidth, setContainerWidth] = useState(0);
     const [minZoom, setMinZoom] = useState(1);
+    const [maxZoom, setMaxZoom] = useState(1);
     const [mediaSize, setMediaSize] = useState<MediaSize | null>(null);
 
     useEffect(() => {
@@ -44,13 +45,13 @@ const CropperArea: React.FC<CropperAreaProps> = ({
     }, []);
 
     const cropSize = {
-        width: containerWidth - 70, // 15px left + 15px right
-        height: containerWidth - 70,
+        width: containerWidth - 72, // 15px left + 15px right
+        height: containerWidth - 72,
     };
 
     const handleMediaLoaded = useCallback((size: MediaSize) => {
         setMediaSize(size);
-        console.log("Media size loaded:", size, imageRef, mediaSize);
+        console.log("Media size loaded:", size, mediaSize);
 
         if (!containerRef.current) return;
 
@@ -58,7 +59,7 @@ const CropperArea: React.FC<CropperAreaProps> = ({
 
         const zoomX = height / size.width;
         const zoomY = height / size.height;
-        const initialZoom = Math.max(zoomX, zoomY, 1);
+        const initialZoom = Math.max(zoomX, zoomY);
 
         // console.log("cropSize", cropSize);
         console.log("containerRef", containerRef.current.getBoundingClientRect());
@@ -67,78 +68,70 @@ const CropperArea: React.FC<CropperAreaProps> = ({
         console.log("zoomY", zoomY);
         console.log("initialZoom", initialZoom);
 
+        const maxZoomX = size.naturalWidth / height;
+        const maxZoomY = size.naturalHeight / height;
+        // return Math.min(1, Math.min(zoomX, zoomY)); // Cap at 1 to enforce native resolution
+        const maxZoom = Math.min(maxZoomX, maxZoomY);
+
+        console.log("maxZoomX", maxZoomX);
+        console.log("maxZoomY", maxZoomY);
+        console.log("maxZoom", maxZoom);
+
         setMinZoom(initialZoom);
+        setMaxZoom(maxZoom);
         onZoomChange(initialZoom);
     }, []);
 
     return (
-        <Box
-            ref={containerRef}
-            sx={{
-                position: 'relative',
-                width: '100%',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                boxSizing: 'border-box',
-                bgcolor: '#000',
-                aspectRatio: '1 / 1',
-            }}
-        >
-            <div
+        <>
+            <Cropper
+                image={image}
+                crop={crop}
+                zoom={zoom}
+                minZoom={minZoom}
+                maxZoom={maxZoom}
+                aspect={aspect}
+                cropShape={cropShape}
+                showGrid={false}
+                onCropChange={onCropChange}
+                onZoomChange={onZoomChange}
+                onCropComplete={onCropComplete}
+                onMediaLoaded={handleMediaLoaded}
+                restrictPosition
+                cropSize={cropSize}
+                objectFit="contain"
+            />
+            {maxZoom > minZoom && <div
                 style={{
-                    position: 'relative',
-                    width: cropSize.width + 70,
-                    height: cropSize.height + 70,
+                    position: 'absolute',
+                    bottom: 3,
+                    left: 0,
+                    right: 0,
+                    padding: '0 25px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
                 }}
             >
-                <Cropper
-                    setImageRef={(ref: React.RefObject<HTMLImageElement>) => {
-                        setImageRef(ref);
-                    }}
-                    image={image}
-                    crop={crop}
-                    zoom={zoom}
-                    minZoom={minZoom}
-                    aspect={1}
-                    cropShape={cropShape}
-                    showGrid={false}
-                    onCropChange={onCropChange}
-                    onZoomChange={onZoomChange}
-                    onCropComplete={onCropComplete}
-                    onMediaLoaded={handleMediaLoaded}
-                    restrictPosition
-                    cropSize={cropSize}
-                    objectFit="contain"
-                />
-                <div
-                    style={{
-                        position: 'absolute',
-                        bottom: -4,
-                        left: 0,
-                        right: 0,
-                        padding: '0 25px',
-                    }}
-                >
-                    <Slider
-                        min={minZoom}
-                        max={10}
-                        step={0.1}
-                        value={zoom}
-                        onChange={(_, value) => onZoomChange(value as number)}
-                        sx={(t) => ({
-                            '& .MuiSlider-thumb': {
-                                '&:hover, &.Mui-focusVisible, &.Mui-active': {
-                                    boxShadow: 'none',
-                                },
+                <Slider
+                    min={minZoom}
+                    max={maxZoom}
+                    step={0.1}
+                    value={zoom}
+                    onChange={(_, value) => onZoomChange(value as number)}
+                    sx={(t) => ({
+                        '& .MuiSlider-thumb': {
+                            '&:hover, &.Mui-focusVisible, &.Mui-active': {
+                                boxShadow: 'none',
                             },
-                        })}
-                    />
-                </div>
+                        },
+                    })}
+                />
             </div>
-        </Box>
+
+            }
+        </>
     );
 };
 
 export default CropperArea;
- 

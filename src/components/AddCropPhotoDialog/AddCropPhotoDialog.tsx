@@ -11,7 +11,8 @@ import {
   Typography,
   IconButton,
   useMediaQuery,
-  useTheme
+  useTheme,
+  Box
 } from '@mui/material';
 import { PhotoCamera, Delete, Image } from '@mui/icons-material';
 import CloseIcon from '@mui/icons-material/Close';
@@ -47,6 +48,7 @@ const AddCropPhotoDialog: React.FC<AddCropPhotoDialogProps> = ({
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
   const [showCamera, setShowCamera] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const handleCapture = (blob: Blob) => {
     const url = URL.createObjectURL(blob);
@@ -96,12 +98,12 @@ const AddCropPhotoDialog: React.FC<AddCropPhotoDialogProps> = ({
   };
 
   function isMobileBrowser(): boolean {
-  if (typeof navigator === 'undefined') return false;
-  return /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-}
+    if (typeof navigator === 'undefined') return false;
+    return /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  }
 
   return (
-    <Dialog open={open} onClose={onClose}  fullWidth maxWidth="sm" fullScreen={fullScreen}>
+    <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm" fullScreen={fullScreen}>
       <DialogTitle sx={{ m: 0, p: 2 }}>
         <Typography variant="h6">Edit Image</Typography>
         <IconButton
@@ -112,7 +114,21 @@ const AddCropPhotoDialog: React.FC<AddCropPhotoDialogProps> = ({
           <CloseIcon />
         </IconButton>
       </DialogTitle>
-      <DialogContent sx={{ p: 0, position: 'relative'  }}>
+      <DialogContent sx={{ p: 0, position: 'relative' }}>
+        <Box
+            ref={containerRef}
+            sx={{
+                position: 'relative',
+                width: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                boxSizing: 'border-box',
+                bgcolor: 'rgba(0, 0, 0, 0.5)',
+                aspectRatio: '1 / 1',
+                padding: imageSrc ? 0 : 4.5,
+            }}
+        >
         {imageSrc ? (
           <CropperArea
             image={imageSrc}
@@ -123,10 +139,12 @@ const AddCropPhotoDialog: React.FC<AddCropPhotoDialogProps> = ({
             onCropChange={setCrop}
             onZoomChange={setZoom}
             onCropComplete={onCropComplete}
+            containerRef={containerRef}
           />
         ) : (
-          <AvatarFallback text={placeholderText} />
+          <AvatarFallback text={placeholderText} containerRef={containerRef}/>
         )}
+        </Box>
 
         {/* <Slider
           min={1}
@@ -141,11 +159,11 @@ const AddCropPhotoDialog: React.FC<AddCropPhotoDialogProps> = ({
         <CameraCapture onCapture={handleCapture} onClose={() => setShowCamera(false)} />
       )} */}
 
-      <CameraDialog
-        open={showCamera}
-        onClose={() => setShowCamera(false)}
-        onCapture={handleCapture}
-      />
+        <CameraDialog
+          open={showCamera}
+          onClose={() => setShowCamera(false)}
+          onCapture={handleCapture}
+        />
 
         <Stack direction="row" spacing={2} sx={{ mt: 2 }}>
           <Button startIcon={<Image />} onClick={handleSelectPhoto}>Select Photo</Button>
@@ -180,4 +198,3 @@ const AddCropPhotoDialog: React.FC<AddCropPhotoDialogProps> = ({
 };
 
 export default AddCropPhotoDialog;
- 

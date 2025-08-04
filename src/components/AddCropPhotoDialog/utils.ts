@@ -54,3 +54,16 @@ const getCroppedImg = async (
 };
 
 export default getCroppedImg;
+
+export function argbIntToCssColor(argb: number): string {
+  const alpha = (argb >> 24) & 0xff;
+  const red = (argb >> 16) & 0xff;
+  const green = (argb >> 8) & 0xff;
+  const blue = argb & 0xff;
+
+  const opacity = +(alpha / 255).toFixed(2);
+
+  return opacity < 1
+    ? `rgba(${red}, ${green}, ${blue}, ${opacity})`
+    : `#${[red, green, blue].map(c => c.toString(16).padStart(2, '0')).join('')}`;
+}

@@ -32,7 +32,7 @@ export default function CameraDialog({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const theme = useTheme();
-  const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
+  const fullScreen = useMediaQuery(theme.breakpoints.down('xl'));
 
   useEffect(() => {
     if (!open) return;
@@ -77,9 +77,10 @@ export default function CameraDialog({
 
   return (
     // <Dialog open={open} onClose={onClose} fullScreen={fullScreen}>
+    // fullWidth maxWidth="sm" fullScreen={fullScreen}
 
-        <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm" fullScreen={fullScreen}>
-      <DialogTitle sx={{ m: 0, p: 2 }}>
+    <Dialog open={open} onClose={onClose} fullScreen> 
+      {/* <DialogTitle sx={{ m: 0, p: 2 }}>
         <Typography variant="h6">Camera</Typography>
         <IconButton
           aria-label="close"
@@ -88,13 +89,13 @@ export default function CameraDialog({
         >
           <CloseIcon />
         </IconButton>
-      </DialogTitle>
+      </DialogTitle> */}
       <DialogContent
         sx={{
           p: 0,
           position: 'relative',
           bgcolor: 'black',
-        //   height: fullScreen ? '100vh' : 600,
+          //   height: fullScreen ? '100vh' : 600,
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'center',
@@ -118,6 +119,7 @@ export default function CameraDialog({
               width: '100%',
               height: '100%',
               objectFit: 'cover',
+              display: 'block',
             }}
           />
 
@@ -180,4 +182,3 @@ export default function CameraDialog({
     </Dialog>
   );
 }
- 
