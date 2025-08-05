@@ -37,17 +37,12 @@
 
 // export default App;
 
-
-
-
-
 // import React, { useState } from "react";
 // import {AvatarEditor} from "./components/AvatarEditor";
 // import { Avatar, Box, Button } from "@mui/material";
 // import PhotoDialog from "./components/PhotoDialog/PhotoDialog";
 
 // export default function App() {
-
 
 //   const [dialogOpen, setDialogOpen] = useState(false);
 //   const [avatarUrl, setAvatarUrl] = useState<string | undefined>();
@@ -83,8 +78,6 @@
 //     </Box>
 //   );
 
-
-
 //   // // Hàm nhận ảnh đã crop (blob), ví dụ upload lên server hoặc convert sang base64
 //   // const handleCropComplete = (croppedBlob: Blob | null) => {
 //   //   if (!croppedBlob) return;
@@ -109,11 +102,10 @@
 //   // );
 // }
 
-import React, { useState } from 'react';
-import AddCropPhotoDialog from './components/AddCropPhotoDialog/AddCropPhotoDialog';
-import { Button, Avatar, Stack } from '@mui/material';
-
-
+import React, { useState } from "react";
+import AddCropPhotoDialog from "./components/AddCropPhotoDialog/AddCropPhotoDialog";
+import { Button, Avatar, Stack } from "@mui/material";
+import EditImageDialog from "./components/image-editor/EditImageDialog";
 
 function App2() {
   const [open, setOpen] = useState(false);
@@ -134,14 +126,27 @@ function App2() {
   };
 
   return (
-    <Stack spacing={2} alignItems="center" justifyContent="center" sx={{ mt: 4 }}>
-      <Avatar
-        src={photoUrl}
-        sx={{ width: 120, height: 120 }}
-      />
-      <Button variant="contained" onClick={() => setOpen(true)}>Edit Image</Button>
+    <Stack
+      spacing={2}
+      alignItems="center"
+      justifyContent="center"
+      sx={{ mt: 4 }}
+    >
+      <Avatar src={photoUrl} sx={{ width: 120, height: 120 }} />
+      <Button variant="contained" onClick={() => setOpen(true)}>
+        Edit Image
+      </Button>
 
-      <AddCropPhotoDialog
+      {/* <AddCropPhotoDialog
+        open={open}
+        onClose={() => setOpen(false)}
+        onSave={handleSave}
+        imageUrl={photoUrl}
+        placeholderText="Jane Doe"
+        isAvatar={true}
+      /> */}
+
+      <EditImageDialog
         open={open}
         onClose={() => setOpen(false)}
         onSave={handleSave}

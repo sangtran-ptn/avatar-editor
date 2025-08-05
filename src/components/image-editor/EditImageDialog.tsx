@@ -1,23 +1,20 @@
-import React, { useState, useCallback, useRef } from "react";
+import React, { useState, useCallback, useRef, useMemo } from "react";
 import {
   Dialog,
-  DialogTitle,
   DialogContent,
   DialogActions,
   Button,
-  Stack,
-  Typography,
-  IconButton,
   useMediaQuery,
   useTheme,
   Box,
 } from "@mui/material";
-import { PhotoCamera, Delete, Image } from "@mui/icons-material";
-import CloseIcon from "@mui/icons-material/Close";
-import CropperArea from "../AddCropPhotoDialog/CropperArea";
-import AvatarFallback from "../AddCropPhotoDialog/AvatarFallback";
-import getCroppedImg from "../AddCropPhotoDialog/utils";
-import CameraDialog from "../AddCropPhotoDialog/CameraDialog";
+
+import ImageCropper from "./ImageCropper";
+import AvatarPlaceholder from "./AvatarPlaceholder";
+import { generateCroppedImageFile } from "./imageUtils";
+import CameraDialog from "./CameraDialog";
+import DialogHeader from "./DialogHeader";
+import PhotoActionButtons from "./PhotoActionButtons";
 
 interface EditImageDialogProps {
   open: boolean;
@@ -36,47 +33,55 @@ const EditImageDialog: React.FC<EditImageDialogProps> = ({
   placeholderText,
   isAvatar = true,
 }) => {
+  const theme = useTheme();
+  const fullScreen = useMediaQuery(theme.breakpoints.down("sm"));
+
   const [imageSrc, setImageSrc] = useState<string | null>(imageUrl || null);
   const [zoom, setZoom] = useState(1);
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
-  const inputRef = useRef<HTMLInputElement>(null);
   const [hasChanged, setHasChanged] = useState(false);
-  const theme = useTheme();
-  const fullScreen = useMediaQuery(theme.breakpoints.down("sm"));
-  const [showCamera, setShowCamera] = useState(false);
+  const [showCameraDialog, setShowCameraDialog] = useState(false);
+
+  const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  const isMobile = useMemo(
+    () => /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent),
+    []
+  );
+
+  const handleFileChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = () => setImageSrc(reader.result as string);
+      reader.readAsDataURL(file);
+      setHasChanged(true);
+    },
+    []
+  );
+
+  const handleUseCamera = () => {
+    if (isMobile) {
+      const input = document.createElement("input");
+      input.type = "file";
+      input.accept = "image/*";
+      input.capture = "environment";
+      input.onchange = handleFileChange as any;
+      input.click();
+    } else {
+      setShowCameraDialog(true);
+    }
+  };
 
   const handleCapture = (blob: Blob) => {
     const url = URL.createObjectURL(blob);
     setImageSrc(url);
-    setShowCamera(false);
-  };
-
-  const onCropComplete = useCallback((_: any, croppedPixels: any) => {
-    setCroppedAreaPixels(croppedPixels);
-  }, []);
-
-  const handleSelectPhoto = () => {
-    inputRef.current?.click();
-  };
-
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => setImageSrc(reader.result as string);
-    reader.readAsDataURL(file);
+    setShowCameraDialog(false);
     setHasChanged(true);
-  };
-
-  const handleUseCamera = () => {
-    const input = document.createElement("input");
-    input.type = "file";
-    input.accept = "image/*";
-    input.capture = "environment";
-    input.onchange = handleFileChange as any;
-    input.click();
   };
 
   const handleRemovePhoto = () => {
@@ -84,20 +89,22 @@ const EditImageDialog: React.FC<EditImageDialogProps> = ({
     setHasChanged(true);
   };
 
+  const handleCropComplete = useCallback((_: any, croppedPixels: any) => {
+    setCroppedAreaPixels(croppedPixels);
+  }, []);
+
   const handleSave = async () => {
     if (imageSrc && croppedAreaPixels) {
-      const croppedFile = await getCroppedImg(imageSrc, croppedAreaPixels);
+      const croppedFile = await generateCroppedImageFile(
+        imageSrc,
+        croppedAreaPixels
+      );
       onSave(croppedFile, hasChanged);
     } else {
       onSave(null, hasChanged);
     }
     onClose();
   };
-
-  function isMobileBrowser(): boolean {
-    if (typeof navigator === "undefined") return false;
-    return /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-  }
 
   return (
     <Dialog
@@ -107,16 +114,8 @@ const EditImageDialog: React.FC<EditImageDialogProps> = ({
       maxWidth="sm"
       fullScreen={fullScreen}
     >
-      <DialogTitle sx={{ m: 0, p: 2 }}>
-        <Typography variant="h6">Edit Image</Typography>
-        <IconButton
-          aria-label="close"
-          onClick={onClose}
-          sx={{ position: "absolute", right: 8, top: 8 }}
-        >
-          <CloseIcon />
-        </IconButton>
-      </DialogTitle>
+      <DialogHeader title="Edit Image" onClose={onClose} />
+
       <DialogContent sx={{ p: 0, position: "relative" }}>
         <Box
           ref={containerRef}
@@ -133,7 +132,7 @@ const EditImageDialog: React.FC<EditImageDialogProps> = ({
           }}
         >
           {imageSrc ? (
-            <CropperArea
+            <ImageCropper
               image={imageSrc}
               crop={crop}
               zoom={zoom}
@@ -141,50 +140,34 @@ const EditImageDialog: React.FC<EditImageDialogProps> = ({
               cropShape={isAvatar ? "round" : "rect"}
               onCropChange={setCrop}
               onZoomChange={setZoom}
-              onCropComplete={onCropComplete}
+              onCropComplete={handleCropComplete}
               containerRef={containerRef}
             />
           ) : (
-            <AvatarFallback text={placeholderText} />
+            <AvatarPlaceholder text={placeholderText} />
           )}
         </Box>
 
         <CameraDialog
-          open={showCamera}
-          onClose={() => setShowCamera(false)}
+          open={showCameraDialog}
+          onClose={() => setShowCameraDialog(false)}
           onCapture={handleCapture}
         />
 
-        <Stack direction="row" spacing={2} sx={{ mt: 2 }}>
-          <Button startIcon={<Image />} onClick={handleSelectPhoto}>
-            Select Photo
-          </Button>
-          <Button
-            startIcon={<PhotoCamera />}
-            onClick={() => {
-              if (isMobileBrowser()) {
-                handleUseCamera();
-              } else {
-                setShowCamera(true);
-              }
-            }}
-          >
-            Use Camera
-          </Button>
-          {imageSrc && (
-            <Button startIcon={<Delete />} onClick={handleRemovePhoto}>
-              Remove Photo
-            </Button>
-          )}
+        <PhotoActionButtons
+          imageSrc={imageSrc}
+          onSelectPhoto={() => inputRef.current?.click()}
+          onUseCamera={handleUseCamera}
+          onRemovePhoto={handleRemovePhoto}
+        />
 
-          <input
-            ref={inputRef}
-            type="file"
-            accept="image/*"
-            hidden
-            onChange={handleFileChange}
-          />
-        </Stack>
+        <input
+          ref={inputRef}
+          type="file"
+          accept="image/*"
+          hidden
+          onChange={handleFileChange}
+        />
       </DialogContent>
 
       <DialogActions>
