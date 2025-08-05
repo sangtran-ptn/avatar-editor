@@ -14,12 +14,12 @@ import {
 } from "@mui/material";
 import { PhotoCamera, Delete, Image } from "@mui/icons-material";
 import CloseIcon from "@mui/icons-material/Close";
-import CropperArea from "./CropperArea";
-import AvatarFallback from "./AvatarFallback";
-import getCroppedImg from "./utils";
-import CameraDialog from "./CameraDialog";
+import CropperArea from "../AddCropPhotoDialog/CropperArea";
+import AvatarFallback from "../AddCropPhotoDialog/AvatarFallback";
+import getCroppedImg from "../AddCropPhotoDialog/utils";
+import CameraDialog from "../AddCropPhotoDialog/CameraDialog";
 
-interface AddCropPhotoDialogProps {
+interface EditImageDialogProps {
   open: boolean;
   onClose: () => void;
   onSave: (croppedFile: File | null, hasChanged: boolean) => void;
@@ -28,7 +28,7 @@ interface AddCropPhotoDialogProps {
   isAvatar?: boolean;
 }
 
-const AddCropPhotoDialog: React.FC<AddCropPhotoDialogProps> = ({
+const EditImageDialog: React.FC<EditImageDialogProps> = ({
   open,
   onClose,
   onSave,
@@ -65,10 +65,7 @@ const AddCropPhotoDialog: React.FC<AddCropPhotoDialogProps> = ({
     const file = e.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = () => {
-      setImageSrc(reader.result as string);
-      console.log("File selected:", imageSrc);
-    };
+    reader.onload = () => setImageSrc(reader.result as string);
     reader.readAsDataURL(file);
     setHasChanged(true);
   };
@@ -174,7 +171,7 @@ const AddCropPhotoDialog: React.FC<AddCropPhotoDialogProps> = ({
           >
             Use Camera
           </Button>
-          {imageSrc != undefined && (
+          {imageSrc && (
             <Button startIcon={<Delete />} onClick={handleRemovePhoto}>
               Remove Photo
             </Button>
@@ -200,4 +197,4 @@ const AddCropPhotoDialog: React.FC<AddCropPhotoDialogProps> = ({
   );
 };
 
-export default AddCropPhotoDialog;
+export default EditImageDialog;
